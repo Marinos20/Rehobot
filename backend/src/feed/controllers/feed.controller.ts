@@ -1,34 +1,40 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { FeedService } from '../services/feed.service';
 import { FeedPost } from '../models/post.interface';
-import { from, Observable } from 'rxjs';
+import { from, Observable, skip, take } from 'rxjs';
 import { DeleteResult, UpdateResult } from 'typeorm';
 
 @Controller('feed')
 export class FeedController {
 
-    constructor(private feedService: FeedService) {}
+    constructor(private feedService: FeedService) { }
     @Post()
     create(@Body() feedPost: FeedPost): Observable<FeedPost> {
         return this.feedService.createPost(feedPost);
 
     }
     //**recuperation allpost */
-     @Get()
-     findAll(): Observable<FeedPost[]> {
-        return this.feedService.findAllPost();
-     }
+    //  @Get()
+    //  findAll(): Observable<FeedPost[]> {
+    //     return this.feedService.findAllPost();
+    //  }
+  //pagination
+    @Get()
+    findSelected(@Query('take') take: number = 1, @Query('skip') skip: number = 1): Observable<FeedPost[]> {
+        take = take > 20 ? 20 : take;
+        return this.feedService.findPosts(take, skip);
+    }
 
-     @Put(':id')
-     update(
+    @Put(':id')
+    update(
         @Param('id') id: number,
         @Body() feedPost: FeedPost
-     ) :  Observable<UpdateResult> {
+    ): Observable<UpdateResult> {
         return this.feedService.updatePost(id, feedPost)
-     }
-     @Delete(':id')
-     delete(@Param('id')id : number
-    ) : Observable<DeleteResult> {
+    }
+    @Delete(':id')
+    delete(@Param('id') id: number
+    ): Observable<DeleteResult> {
         return this.feedService.deletePost(id);
     }
 
