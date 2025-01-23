@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { FeedService } from '../services/feed.service';
 import { FeedPost } from '../models/post.interface';
 import { from, Observable, skip, take } from 'rxjs';
@@ -12,8 +12,8 @@ export class FeedController {
 
     @UseGuards(JwtGuard)
     @Post()
-    create(@Body() feedPost: FeedPost): Observable<FeedPost> {
-        return this.feedService.createPost(feedPost);
+    create(@Body() feedPost: FeedPost, @Request() req): Observable<FeedPost> {
+        return this.feedService.createPost(req.user,feedPost);
 
     }
     //**recuperation allpost */
