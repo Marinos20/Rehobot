@@ -1,14 +1,54 @@
-<ion-header class="ion-container">
-    <ion-toolbar class="toolbar-wrapper">
-        <div>
-            <ion-buttons  slot="start" class="ion-no-padding">
-                
-                <ion-button >
-                    <ion-icon  class="rehobot-logo" name="logo-linkedin"></ion-icon>
+<ion-header class="ion-container ion-no-border">
+    <ion-toolbar >
+        <div class="toolbar-wrapper">
+            <ion-buttons slot="start" class="ion-no-padding">
+
+                <ion-button>
+                    <!-- le logo -->
+                    <ion-icon 
+                    color="primary" 
+                    class="rehobot-logo" 
+                    name="logo-linkedin"
+                    ></ion-icon>
+                    <!-- la barre de recherche  -->
+                    <ion-searchbar 
+                    color="tertiary" 
+                    class="ion-hide-lg-down" 
+                    placeholder="Search">
+
+                    </ion-searchbar>
 
                 </ion-button>
 
             </ion-buttons>
+            <ion-grid>
+                <ion-row class="ion-justify-content-end">
+                    <ion-col size="auto">
+                        <ion-icon name="home"></ion-icon>
+                        <div>Home</div>
+                    </ion-col>
+                    <ion-col size="auto">
+                        <ion-icon name="people"></ion-icon>
+                        <div>Ami(es)</div>
+                    </ion-col>
+                    <ion-col size="auto">
+                        <ion-icon name="briefcase"></ion-icon>
+                        <div>La une</div>
+                    </ion-col>
+                    <ion-col size="auto">
+                        <ion-icon name="chatbox-ellipses"></ion-icon>
+                        <div>Discussion</div>
+                    </ion-col>
+                    <ion-col size="auto">
+                        <ion-icon name="notifications"></ion-icon>
+                        <div>Notification</div>
+                    </ion-col>
+                    <ion-col size="auto">
+                        <ion-icon name="home"></ion-icon>
+                        <div>Moi</div>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
         </div>
 
     </ion-toolbar>
