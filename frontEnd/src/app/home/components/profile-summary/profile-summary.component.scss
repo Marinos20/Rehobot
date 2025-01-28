@@ -1,0 +1,27 @@
+ion-card {
+    width: 225px;
+    box-shadow: none;
+    border: 1px solid #e1e1e1;
+}
+
+.backdrop {
+    height: 54px;
+    display: flex;
+    .background-none {
+        background-color: #a0b4b7;
+        width: 170px;
+        height: 100%;
+    }
+    .background-two {
+        background-color: #dbe7e9;
+        width: 27px;
+        height: 100%;
+    }
+    .background-three {
+        background-color: #bfd3d6;
+        width: 25px;
+        height: 100%;
+    }
+
+    
+}

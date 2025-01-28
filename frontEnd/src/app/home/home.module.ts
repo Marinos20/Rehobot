@@ -7,6 +7,9 @@ import { HomePage } from './home.page';
 import { HeaderComponent } from './components/header/header.component';
 
 import { HomePageRoutingModule } from './home-routing.module';
+import { ProfileSummaryComponent } from './components/profile-summary/profile-summary.component';
+import { StartPostComponent } from './components/start-post/start-post.component';
+import { AdvertisingComponent } from './components/advertising/advertising.component';
 
 @NgModule({
   imports: [
@@ -14,9 +17,14 @@ import { HomePageRoutingModule } from './home-routing.module';
     FormsModule,
     IonicModule,
     HomePageRoutingModule,
-    HomePage, // Import du composant standalone
-    HeaderComponent // Import du composant standalone
-  ]
+    HomePage, 
+    HeaderComponent,
+    ProfileSummaryComponent,
+    StartPostComponent,
+    AdvertisingComponent,
+  ],
 })
 export class HomePageModule {}
+
+
 

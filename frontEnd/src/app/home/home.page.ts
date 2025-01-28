@@ -4,6 +4,12 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HeaderComponent } from './components/header/header.component';
+import { ProfileSummaryComponent } from './components/profile-summary/profile-summary.component';
+import { StartPostComponent } from './components/start-post/start-post.component';
+import { AdvertisingComponent } from './components/advertising/advertising.component';
+
+
+
 
 @Component({
   selector: 'app-home',
@@ -13,7 +19,10 @@ import { HeaderComponent } from './components/header/header.component';
   imports: [
     CommonModule,
     IonicModule, // Modules nécessaires pour les balises ioniques
-    HeaderComponent // Import du composant HeaderComponent pour pouvoir l'utiliser dans la page
+    HeaderComponent, // Import du composant HeaderComponent pour pouvoir l'utiliser dans la page
+    ProfileSummaryComponent,
+    StartPostComponent,
+    AdvertisingComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
