@@ -113,3 +113,9 @@ ion-button {
 ion-button {
   text-transform: initial;
 }
+
+ion-button {
+  ion-text {
+    margin-left: 8px;
+  }
+}

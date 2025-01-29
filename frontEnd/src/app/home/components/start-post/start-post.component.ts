@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
+import { ModalComponent } from './modal/modal.component';
 
 @Component({
   selector: 'app-start-post',
@@ -14,8 +15,18 @@ import { CommonModule } from '@angular/common';
 })
 export class StartPostComponent  implements OnInit {
 
-  constructor() { }
+  constructor(public modalController: ModalController) { }
 
   ngOnInit() {}
+
+  async presentModal() {
+    const modal = await this.modalController.create({
+      component: ModalComponent,
+      cssClass: 'my-custom-class2'
+    })
+    await modal.present()
+    const { role } = await modal.onDidDismiss();
+    console.log(7, role)
+  }
 
 }
