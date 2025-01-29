@@ -5,12 +5,20 @@ ion-card {
 }
 
 .backdrop {
+    background-color: #dbe7e9;
     height: 54px;
     display: flex;
-    .background-none {
+    .background-one {
         background-color: #a0b4b7;
         width: 170px;
         height: 100%;
+    }
+    .half-ellipse {
+        border-radius: 0 100% 100% 0 / 50%;
+        background-color: #a0b4b7;
+        width: 3px;
+        height: 100%;
+
     }
     .background-two {
         background-color: #dbe7e9;
@@ -24,4 +32,23 @@ ion-card {
     }
 
     
+}
+ion-card-header {
+    margin-top: -54px;
+    ion-avatar {
+        width: 72px;
+        height: 72px;
+        margin: auto;
+        border: 2px solid var(--ion-color-primary-contrast);
+        box-shadow: inset 0px 0px 10px var(--ion-color-primary-contrast);
+    }
+}
+
+ion-card-content div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.connections {
+    margin-top: 8px;
 }

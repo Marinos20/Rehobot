@@ -104,3 +104,12 @@ ion-button {
     margin-left: 8px;
   }
 }
+
+
+.item-divider {
+  border-bottom: 1px solid var(--ion-color-light-tint);
+}
+
+ion-button {
+  text-transform: initial;
+}
