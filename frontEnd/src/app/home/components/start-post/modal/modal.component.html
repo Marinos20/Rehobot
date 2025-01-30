@@ -1,4 +1,4 @@
-<div>
+ <div>
   <div class="heading ion-padding">
     <ion-text>Create a post</ion-text>
     <ion-button size="small" color="dark" fill="clear" shape="round">
@@ -25,7 +25,7 @@
       </ion-col>
     </ion-row>
   </ion-grid>
-  <form class="ion-padding">
+  <form #form="ngForm" (ngSubmit)="onPost()" class="ion-padding">
     <ion-textarea rows="5" placeholder="What do you want to talk about?" 
     type="text" name="body" required>
     
@@ -35,27 +35,31 @@
     <div class="action-items">
       <div>
         <ion-button size="small" shape="round" color="dark" fill="clear">
+          <ion-icon class="ion-padding-none" slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+
+        <ion-button size="small" shape="round" color="dark" fill="clear">
           <ion-icon class="ion-padding-none" slot="icon-only" name="image-outline"></ion-icon>
         </ion-button>
 
         <ion-button size="small" shape="round" color="dark" fill="clear">
-          <ion-icon class="ion-padding-none" slot="icon-only" name="add"></ion-icon>
+          <ion-icon class="ion-padding-none" slot="icon-only" name="play-sharp"></ion-icon>
         </ion-button>
 
         <ion-button size="small" shape="round" color="dark" fill="clear">
-          <ion-icon class="ion-padding-none" slot="icon-only" name="add"></ion-icon>
+          <ion-icon class="ion-padding-none" slot="icon-only" name="calendar-outline"></ion-icon>
         </ion-button>
 
         <ion-button size="small" shape="round" color="dark" fill="clear">
-          <ion-icon class="ion-padding-none" slot="icon-only" name="add"></ion-icon>
+          <ion-icon class="ion-padding-none" name="chatbox-ellipses-outline"></ion-icon>
+          <ion-text class="view-status">Anyone</ion-text>
         </ion-button>
 
-        <ion-button size="small" shape="round" color="dark" fill="clear">
-          <ion-icon class="ion-padding-none" slot="icon-only" name="add"></ion-icon>
-        </ion-button>
+        <ion-button [disabled]="!form.valid" type="submit" class="ion-margin"> Post</ion-button>
 
 
       </div>
     </div>
   </form>
-</div>
+</div> 
+
