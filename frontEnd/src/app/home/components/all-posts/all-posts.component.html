@@ -1,7 +1,7 @@
 <div class="all-posts-container">
-<ion-content>
+<ion-content >
   <ion-list>
-    <ion-card>
+    <ion-card *ngFor="let post of allLoadedPosts">
     <ion-grid>
       <ion-row class="ion-align-items-center ion-justify-content-center">
         <ion-col size="auto" class="ion-padding">
@@ -20,8 +20,8 @@
           </div>
         </ion-col>
       </ion-row>
-
-      <p class="post-body">Lorem ipsum dolor sit..</p>
+        
+      <p class="post-body">{{ post.body }}</p>
       <ion-row>
         <ion-button color="medium" fill="clear">
           <ion-icon name="thumbs-up-outline"></ion-icon>
@@ -45,7 +45,7 @@
       </ion-row>
     </ion-grid>
 
-  </ion-card>
+  </ion-card> 
 
   </ion-list>
   
@@ -57,5 +57,6 @@
   </ion-infinite-scroll>
   
 </ion-content>
+<div class="hide-scroll"></div>
 </div>
 

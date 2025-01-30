@@ -1,5 +1,6 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IonicModule, IonInfiniteScroll } from '@ionic/angular';
 import { PostService } from '../../services/post.service';
 import { InfiniteScrollCustomEvent } from '@ionic/angular';
@@ -10,7 +11,7 @@ import { Post } from '../models/Post';
   templateUrl: './all-posts.component.html',
   styleUrls: ['./all-posts.component.scss'],
   standalone: true,
-  imports: [IonicModule], 
+  imports: [IonicModule,CommonModule], 
   providers: [PostService],
 })
 export class AllPostsComponent implements OnInit {
