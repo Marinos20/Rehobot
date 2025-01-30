@@ -9,6 +9,7 @@ import { StartPostComponent } from './components/start-post/start-post.component
 import { AdvertisingComponent } from './components/advertising/advertising.component';
 import { ModalComponent } from './components/start-post/modal/modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AllPostsComponent } from './components/all-posts/all-posts.component';
 
 
 
@@ -26,6 +27,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     StartPostComponent,
     AdvertisingComponent,
     ReactiveFormsModule,
+    AllPostsComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
