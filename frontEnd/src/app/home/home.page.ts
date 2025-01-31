@@ -29,7 +29,7 @@ import { TabsComponent } from './components/tabs/tabs.component';
     AdvertisingComponent,
     ReactiveFormsModule,
     AllPostsComponent,
-    // TabsComponent,
+    TabsComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
