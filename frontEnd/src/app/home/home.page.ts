@@ -10,6 +10,7 @@ import { AdvertisingComponent } from './components/advertising/advertising.compo
 import { ModalComponent } from './components/start-post/modal/modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AllPostsComponent } from './components/all-posts/all-posts.component';
+import { TabsComponent } from './components/tabs/tabs.component';
 
 
 
@@ -27,7 +28,8 @@ import { AllPostsComponent } from './components/all-posts/all-posts.component';
     StartPostComponent,
     AdvertisingComponent,
     ReactiveFormsModule,
-    AllPostsComponent
+    AllPostsComponent,
+    // TabsComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

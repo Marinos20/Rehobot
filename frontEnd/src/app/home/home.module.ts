@@ -11,6 +11,7 @@ import { ProfileSummaryComponent } from './components/profile-summary/profile-su
 import { StartPostComponent } from './components/start-post/start-post.component';
 import { AdvertisingComponent } from './components/advertising/advertising.component';
 import { ModalComponent } from './components/start-post/modal/modal.component';
+import { TabsComponent } from './components/tabs/tabs.component';
 
 @NgModule({
   imports: [
@@ -25,6 +26,7 @@ import { ModalComponent } from './components/start-post/modal/modal.component';
     AdvertisingComponent,
     ModalComponent,
     ReactiveFormsModule,
+    TabsComponent,
   ],
 })
 export class HomePageModule {}

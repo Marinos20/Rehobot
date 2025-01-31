@@ -10,6 +10,7 @@ export class PostService {
   constructor(private http: HttpClient) { }
   
   getSelectedPosts(params: string) {
+    // connexion avec le backend pour recevoir les posts
     return this.http.get<Post[]>(`http://localhost:3000/omertaa/feed${params}`);
   }
   
