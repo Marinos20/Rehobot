@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms'; 
 import { NewUser } from './guards/models/newUser.model';
 import { AuthService } from './services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth',
@@ -16,7 +17,7 @@ export class AuthPage implements OnInit, AfterViewInit {
   @ViewChild('form') form!: NgForm; 
   submissionType: 'login' | 'join' = 'login';
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {} 
 
   ngOnInit() {}
 
@@ -33,13 +34,15 @@ export class AuthPage implements OnInit, AfterViewInit {
     if (!email || !password) return;
 
     if (this.submissionType === 'login') {
-      console.log('🔹 Handle login:', email, password);
+      return this.authService.login(email, password).subscribe(() => {
+        this.router.navigateByUrl('/home'); 
+      });
     } else {
       const { firstName, lastName } = this.form.value;
       if (!firstName || !lastName) return;
 
       const newUser: NewUser = { firstName, lastName, email, password };
-      this.authService.register(newUser).subscribe(() => {
+      return this.authService.register(newUser).subscribe(() => {
         this.toggleText();
       });
     }
