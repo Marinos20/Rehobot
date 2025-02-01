@@ -1,45 +1,51 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms'; 
+import { NewUser } from './guards/models/newUser.model';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule,CommonModule],
+  imports: [IonicModule, FormsModule, CommonModule],
 })
-// cest amusant de faire du code... lala je bois du gari hihi
-export class AuthPage implements OnInit {
-  @ViewChild('form') form!: NgForm;
+export class AuthPage implements OnInit, AfterViewInit {
+  @ViewChild('form') form!: NgForm; 
+  submissionType: 'login' | 'join' = 'login';
 
-  submissionType: 'login' | 'join' = 'login' ;
-  constructor() {}
+  constructor(private authService: AuthService) {}
+
   ngOnInit() {}
+
+  ngAfterViewInit() {
+    if (!this.form) {
+      console.error('Form not found!');
+    }
+  }
+
   onSubmit() {
-    const { email , password } = this.form.value;
-    if(!email || !password) return;
-    if (this.submissionType == 'login') {
-      console.log(1 , 'handle login' , email, password);
+    if (!this.form || !this.form.value) return;
 
+    const { email, password } = this.form.value;
+    if (!email || !password) return;
 
-    } else if (this.submissionType == 'join') {
-      const { firstName , lastName } = this.form.value;
-      if(!firstName || !lastName) return;
-      console.log(2 , 'handle join' , email, password , firstName , lastName);
+    if (this.submissionType === 'login') {
+      console.log('🔹 Handle login:', email, password);
+    } else {
+      const { firstName, lastName } = this.form.value;
+      if (!firstName || !lastName) return;
 
-
+      const newUser: NewUser = { firstName, lastName, email, password };
+      this.authService.register(newUser).subscribe(() => {
+        this.toggleText();
+      });
     }
   }
 
   toggleText() {
-    if (this.submissionType == 'login') {
-      this.submissionType = 'join';
-
-    } else if (this.submissionType == 'join') {
-      this.submissionType = 'login';
-
-    }
+    this.submissionType = this.submissionType === 'login' ? 'join' : 'login';
   }
 }
