@@ -15,12 +15,8 @@ export class AuthPage implements OnInit {
   @ViewChild('form') form!: NgForm;
 
   submissionType: 'login' | 'join' = 'login' ;
-
-
   constructor() {}
-
   ngOnInit() {}
-
   onSubmit() {
     const { email , password } = this.form.value;
     if(!email || !password) return;
