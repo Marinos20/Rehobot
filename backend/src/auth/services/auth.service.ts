@@ -82,7 +82,13 @@ export class AuthService {
 
     findUserById(id: number): Observable<User> {
         return from(
-            this.userRepository.findOne({ id }, { })
-        )
+            this.userRepository.findOne({ where: { id }, relations: ['feedPosts'] })
+        ).pipe(
+            map((user: User | null) => {
+                if (!user) throw new Error('Utilisateur non trouvé');
+                delete user.password;
+                return user;
+            })
+        );
     }
 }

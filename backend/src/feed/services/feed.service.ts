@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FeedPost } from '../models/post.interface';
 import { from, Observable, skip, take } from 'rxjs';
 import { User } from 'src/auth/controllers/models/user.interface';
+import { relative } from 'path';
 
 @Injectable()
 export class FeedService {
@@ -32,5 +33,11 @@ export class FeedService {
     }
     deletePost(id: number): Observable<DeleteResult> {
         return from(this.feedPostRepository.delete(id));
+     }
+
+     findPostById(id: number): Observable<FeedPost> {
+        return from(
+            this.feedPostRepository.findOne({ where: { id }, relations: ['author'] }),
+        )
      }
 }
