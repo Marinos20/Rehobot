@@ -1,0 +1,123 @@
+::root {
+    --ion-color-primary: #0077b5;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-secondary: #00a0dc;
+    --ion-color-tertiary: #eef3f8;
+    --ion-color-success: #7fc15e;
+    --ion-color-warning: #e7a338;
+    --ion-color-danger: #cc1016;
+    --ion-color-marinos: #000407;
+    --ion-color-medium: #86888a;
+    --ion-color-light: #caccce;
+    --ion-color-dark: #313335;
+  }
+  
+  ion-content {
+    background-color: var(--ion-color-dark);
+    color: var(--ion-color-light);
+    font-family: 'Arial', sans-serif;
+  
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+      
+      .logo-text {
+        font-size: 3rem;
+        font-weight: bold;
+        color: var(--ion-color-primary);
+      }
+      
+      .logo-icon {
+        font-size: 4rem;
+        color: var(--ion-color-primary);
+        margin-top: 10px;
+      }
+    }
+  
+    .subtitle-container {
+      text-align: center;
+      font-size: 1.5rem;
+      color: var(--ion-color-marinos);
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+  
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 40px;
+      padding: 20px;
+      
+      ion-card {
+        width: 100%;
+        max-width: 500px;
+        background: var(--ion-color-dark-tint);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  
+        ion-item {
+          --highlight-color: var(--ion-color-primary);
+          --background: var(--ion-color-dark-tint);
+          margin-bottom: 20px;
+          
+          ion-label {
+            color: var(--ion-color-light);
+          }
+  
+          ion-input {
+            --padding-start: 10px;
+            --padding-end: 10px;
+            --color: #ffffff; /* Texte des inputs en blanc */
+            --placeholder-color: #cccccc; /* Couleur du placeholder en gris clair */
+          }
+        }
+  
+        ion-text {
+          color: var(--ion-color-danger);
+          font-size: 0.9rem;
+        }
+  
+        p.terms-and-conditions {
+          font-size: 0.8rem;
+          color: var(--ion-color-light);
+          margin-top: 15px;
+          text-align: center;
+  
+          ion-text {
+            text-decoration: underline;
+            cursor: pointer;
+          }
+        }
+  
+        ion-button {
+          --background: var(--ion-color-primary);
+          --border-radius: 25px;
+          --padding-top: 15px;
+          --padding-bottom: 15px;
+          --margin-top: 20px;
+          font-size: 1.1rem;
+          text-transform: uppercase;
+          width: 100%;
+        }
+      }
+    }
+  
+    .toggle-text {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--ion-color-marinos);
+      margin-top: 30px;
+  
+      ion-text {
+        cursor: pointer;
+        font-weight: bold;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+  
