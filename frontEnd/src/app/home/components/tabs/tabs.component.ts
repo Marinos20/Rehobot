@@ -1,19 +1,5 @@
-// import { Component, OnInit } from '@angular/core';
 
-// @Component({
-//   selector: 'app-tabs',
-//   templateUrl: './tabs.component.html',
-//   styleUrls: ['./tabs.component.scss'],
-// })
-// export class TabsComponent  implements OnInit {
-
-//   constructor() { }
-
-//   ngOnInit() {}
-
-// }
-
-
+import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { Component, OnInit } from '@angular/core';
 import { ModalComponent } from '../start-post/modal/modal.component';
@@ -23,10 +9,9 @@ import { ModalComponent } from '../start-post/modal/modal.component';
   standalone: true,
   templateUrl: './tabs.component.html',
   styleUrls: ['./tabs.component.scss'],
-  imports: [IonicModule] 
+  imports: [CommonModule, IonicModule] // Ajout de CommonModule
 })
 export class TabsComponent implements OnInit {
-
   constructor(public modalController: ModalController) {}
 
   ngOnInit() {}
@@ -35,13 +20,13 @@ export class TabsComponent implements OnInit {
     const modal = await this.modalController.create({
       component: ModalComponent,
       cssClass: 'my-custom-class2'
-    })
-    await modal.present()
-    const {data, role } = await modal.onDidDismiss();
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
     if (data) {
-      console.log('data exists !')
+      console.log('data exists !');
     }
-    console.log('role: ',role, 'data:' ,data )
+    console.log('role: ', role, 'data:', data);
   }
-
 }
+

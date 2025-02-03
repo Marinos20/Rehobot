@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences'; 
 import { jwtDecode } from 'jwt-decode'; 
 import { BehaviorSubject, Observable, throwError, from } from 'rxjs';
-import { switchMap, take, tap, catchError, map } from 'rxjs/operators';
+import { switchMap, take, tap, catchError, map, filter } from 'rxjs/operators';
 import { NewUser } from 'src/app/auth/guards/models/newUser.model';
 import { Role, User } from 'src/app/auth/guards/models/user.model';
 import { environment } from 'src/environments/environment';
@@ -45,6 +45,15 @@ export class AuthService {
   get userRole(): Observable<Role> {
     return this.user$.asObservable().pipe(map((user: User | null) => user?.role ?? 'user'));
   }
+
+
+  get userId(): Observable<number> {
+    return this.user$.asObservable().pipe(
+      filter((user: User | null): user is User => user !== null),
+      map((user: User) => user.id)
+    );
+  }
+  
 
   //  Méthode d'inscription
   register(newUser: NewUser): Observable<User> {
