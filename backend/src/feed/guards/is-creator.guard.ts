@@ -5,10 +5,12 @@ import { FeedService } from '../services/feed.service';
 import { User } from 'src/auth/controllers/models/user.interface';
 import { request } from 'http';
 import { FeedPost } from '../models/post.interface';
+import { UserService } from 'src/auth/services/user.service';
 
 @Injectable()
 export class IsCreatorGuard implements CanActivate {
-  constructor(private authService:AuthService, private feedService: FeedService) {}
+  constructor(private authService:AuthService, private feedService: FeedService , private userService: UserService)
+   {}
 
   canActivate(
     context: ExecutionContext,
@@ -28,7 +30,7 @@ export class IsCreatorGuard implements CanActivate {
 
     //Determiner si l'utilisateur connnecté est le même que l'utilisateur qui a crée la publication du fil d'actualité
 
-    return this.authService.findUserById(userId).pipe(
+    return this.userService.findUserById(userId).pipe(
       switchMap((foundUser: User | null) => {
         if (!foundUser) return of(false); // L'utilisateur n'existe pas
         return this.feedService.findPostById(feedId).pipe(

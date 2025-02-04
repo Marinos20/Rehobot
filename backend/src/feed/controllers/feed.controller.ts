@@ -14,18 +14,15 @@ export class FeedController {
 
     constructor(private feedService: FeedService) { }
 
-    @Roles(Role.ADMIN , Role.PREMIUM)
-    @UseGuards(JwtGuard, RolesGuard)
+    // @Roles(Role.ADMIN , Role.PREMIUM)
+    // @UseGuards(JwtGuard, RolesGuard)
+    @UseGuards(JwtGuard)
     @Post()
     create(@Body() feedPost: FeedPost, @Request() req): Observable<FeedPost> {
         return this.feedService.createPost(req.user,feedPost);
 
     }
-    //**recuperation allpost */
-    //  @Get()
-    //  findAll(): Observable<FeedPost[]> {
-    //     return this.feedService.findAllPost();
-    //  }
+
   //pagination
     @Get()
     findSelected(@Query('take') take: number = 1, @Query('skip') skip: number = 1): Observable<FeedPost[]> {
