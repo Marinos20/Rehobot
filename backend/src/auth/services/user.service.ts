@@ -38,7 +38,7 @@ export class UserService {
         return from(this.userRepository.findOne({ where: { id } })).pipe(
             map((user: User | null) => {
                 if (!user) throw new NotFoundException('Utilisateur non trouvé');
-                delete user.password; // Correction ici
+                delete user.password; 
                 return user.imagePath;
             }),
             catchError(() => throwError(() => new NotFoundException('Utilisateur non trouvé')))
