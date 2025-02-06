@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { AuthService } from 'src/app/auth/services/auth.service';
 
 @Component({
   selector: 'app-popover',
@@ -15,26 +17,12 @@ import { IonicModule } from '@ionic/angular';
 })
 export class PopoverComponent  implements OnInit {
 
-  constructor() { }
+  constructor( private authService:AuthService) { }
 
   ngOnInit() {}
 
   onSignOut() {
-    console.log(1, 'onSignOut() called!');
+    this.authService.logout();
   }
 
 }
-
-
-
-// import { NgModule } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { PopoverComponent } from './popover.component';
-
-// @NgModule({
-//   declarations: [PopoverComponent],
-//   imports: [CommonModule],
-//   exports: [PopoverComponent], // Rendre disponible ailleurs
-// })
-// export class PopoverModule {}
-
