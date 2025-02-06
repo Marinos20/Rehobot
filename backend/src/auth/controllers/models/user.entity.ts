@@ -18,6 +18,10 @@ export class UserEntity {
     @Column({ select : false})
     password: string;
 
+
+    @Column({ nullable : true})
+    imagePath: string;
+
     @Column({ unique: true})
     email : string;
 
