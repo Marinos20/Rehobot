@@ -38,10 +38,17 @@ export class UserService {
         return from(this.userRepository.findOne({ where: { id } })).pipe(
             map((user: User | null) => {
                 if (!user) throw new NotFoundException('Utilisateur non trouvé');
-                delete user.password; 
+                delete user.password;
+    
+                // Vérifie que l'image existe et renvoie le chemin de l'image
+                if (!user.imagePath) {
+                    throw new NotFoundException('Aucune image trouvée pour cet utilisateur');
+                }
+    
                 return user.imagePath;
             }),
             catchError(() => throwError(() => new NotFoundException('Utilisateur non trouvé')))
         );
     }
+    
 }

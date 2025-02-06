@@ -38,11 +38,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FeedModule } from './feed/feed.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './auth/controllers/models/user.module';
+import { ServeStaticModule } from '@nestjs/serve-static';  // Import de ServeStaticModule
+import { join } from 'path';  // Import de join pour gérer les chemins
 
 @Module({
-  //**configuration base de donnée postgres */
   imports: [
-    ConfigModule.forRoot({ isGlobal : true }),  // Config globale pour les variables d'environnement
+    ConfigModule.forRoot({ isGlobal: true }),  // Config globale pour les variables d'environnement
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST,
@@ -55,9 +56,14 @@ import { UserModule } from './auth/controllers/models/user.module';
     }),
     FeedModule,
     AuthModule,
-     UserModule, 
+    UserModule,
+    // Configuration pour servir les fichiers statiques du dossier 'images'
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'images'),  // Le chemin vers ton dossier 'images'
+      serveRoot: '/images',  // URL d'accès aux images via HTTP
+    }),
   ],
-  controllers: [AppController],  // Gère le contrôleur principal
-  providers: [AppService],  // Fournisseur de services
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

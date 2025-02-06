@@ -15,22 +15,47 @@
 // bootstrap();
 
 
+// import { NestFactory } from '@nestjs/core';
+// import { AppModule } from './app.module';
+// import { MulterExceptionFilter } from './filters/MulterExceptionFilter';
+
+// async function bootstrap() {
+//     const app = await NestFactory.create(AppModule);
+//     app.enableCors();
+
+//     app.setGlobalPrefix('omertaa')
+    
+//     // Applique le filtre globalement
+//     app.useGlobalFilters(new MulterExceptionFilter());
+//     await app.listen(process.env.PORT ?? 3000)
+
+// }
+
+// bootstrap();
+
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MulterExceptionFilter } from './filters/MulterExceptionFilter';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // Activer CORS
     app.enableCors();
 
-    app.setGlobalPrefix('omertaa')
-    
-    // Applique le filtre globalement
-    app.useGlobalFilters(new MulterExceptionFilter());
-    await app.listen(process.env.PORT ?? 3000)
+    // Appliquer le préfixe global "omertaa"
+    app.setGlobalPrefix('omertaa');
 
+    // Appliquer le filtre globalement
+    app.useGlobalFilters(new MulterExceptionFilter());
+
+    // Lancer l'application sur le port spécifié (ou 3000 par défaut)
+    await app.listen(process.env.PORT ?? 3000);
 }
 
 bootstrap();
+
+
 
 

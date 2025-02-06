@@ -3,8 +3,8 @@ import { JwtGuard } from '../guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isFileExtensionSafe, saveImageToStorage, removeFile } from '../helpers/image-storage';
 import { UserService } from '../services/user.service';
-import { switchMap, catchError, of } from 'rxjs';
-import { join } from 'path';
+import { switchMap, catchError, of, lastValueFrom } from 'rxjs';
+import path, { join } from 'path';
 import * as fs from 'fs/promises';
 
 @Controller('user')
@@ -48,21 +48,37 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Get('image')
-    async findImage(@Request() req, @Res() res): Promise<void> {
-        const userId = req.user.id;
-        const imageName = await this.userService.findImageNameByUserId(userId).toPromise();
+async findImage(@Request() req, @Res() res): Promise<void> {
+    const userId = req.user.id;
+
+    try {
+        // Récupération du nom de l'image pour l'utilisateur
+        const imageName = await lastValueFrom(this.userService.findImageNameByUserId(userId));
 
         if (!imageName) {
+            console.log('❌ Aucun nom d\'image trouvé pour cet utilisateur');
             throw new NotFoundException('Aucune image trouvée pour cet utilisateur');
         }
 
-        const imagePath = join(process.cwd(), 'images', imageName);
+        // Vérification du chemin complet de l'image (sans afficher le chemin dans le terminal)
+        const imagePath = imageName.startsWith('/') ? imageName : path.join(process.cwd(), 'images', imageName);
 
+        // Vérifier si le fichier existe sur le disque
         try {
             await fs.access(imagePath);
-            res.sendFile(imageName, { root: './images' });
-        } catch {
+        } catch (err) {
+            console.log('❌ L\'image n\'existe pas sur le disque:', err);
             throw new NotFoundException('Image non trouvée');
         }
+
+        // Envoyer l'image
+        return res.sendFile(imagePath);
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération de l\'image:', error);
+        throw new NotFoundException('Image non trouvée');
     }
+}
+
+
+
 }
