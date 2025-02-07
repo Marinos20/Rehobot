@@ -1,61 +1,15 @@
-
-// import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request } from '@nestjs/common';
-// import { JwtGuard } from '../guards/jwt.guard';
-// import { FileInterceptor } from '@nestjs/platform-express';
-// import { isFileExtensionSafe, saveImageToStorage, removeFile } from '../helpers/image-storage';
-// import { UserService } from '../services/user.service';
-// import { join } from 'path';
-// import { switchMap } from 'rxjs';
-
-// @Controller('user')
-// export class UserController {
-//     constructor(private userService: UserService) {}
-
-//     // Route protégée par le guard JWT 0169475819
-//     @UseGuards(JwtGuard)
-//     @Post('upload')
-//     @UseInterceptors(FileInterceptor('file', saveImageToStorage))  // Assurez-vous que le champ 'file' dans Postman correspond à celui-ci
-//     async uploadImage(@UploadedFile() file: Express.Multer.File, @Request() req): Promise<any> {
-//         if (!file) {
-//             return { message: 'Aucun fichier téléchargé' };
-//         }
-
-//         // Logique pour mettre à jour l'image de l'utilisateur dans la base de données
-//         const userId = req.user.id;  // Supposons que l'ID de l'utilisateur soit disponible dans req.user, après la vérification JWT
-//         const fullImagePath = `/images/${file.filename}`;  // Chemin du fichier téléchargé
-//         const imagesFolderPath = join(process.cwd() , 'images');
-
-//         // Mettre à jour l'image dans la base de données
-//         await this.userService.updateUserImageById(userId, fullImagePath);
-
-//         return isFileExtensionSafe(fullImagePath).pipe(
-//             switchMap((isFileLegit : boolean) => {
-//                 if (isFileLegit){
-//                     const userId = req.uer.id;
-//                     return this.userService.updateUserImageById(userId,fileName)
-//                 }
-//                 removeFile(fullImagePath);
-//                 return { message: 'Image téléchargée avec succès', fileName: file.filename, imageUrl: fullImagePath };
-//             })
-//         )
-
-       
-        
-//     }
-// }
-
-
-import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request, BadRequestException, Logger } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request, BadRequestException, Logger, NotFoundException, Res, Get } from '@nestjs/common';
 import { JwtGuard } from '../guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isFileExtensionSafe, saveImageToStorage, removeFile } from '../helpers/image-storage';
 import { UserService } from '../services/user.service';
-import { switchMap, catchError, of } from 'rxjs';
-import { join } from 'path';
+import { switchMap, catchError, of, lastValueFrom, Observable } from 'rxjs';
+import path, { join } from 'path';
+import * as fs from 'fs/promises';
 
 @Controller('user')
 export class UserController {
-    private readonly logger = new Logger(UserController.name);  // Logger pour afficher l'erreur dans les logs du serveur
+    private readonly logger = new Logger(UserController.name);
 
     constructor(private userService: UserService) {}
 
@@ -64,45 +18,76 @@ export class UserController {
     @UseInterceptors(FileInterceptor('file', saveImageToStorage))
     async uploadImage(@UploadedFile() file: Express.Multer.File, @Request() req): Promise<any> {
         if (!file) {
-            throw new BadRequestException('Aucun fichier téléchargé ou fichier invalide. Veuillez télécharger une image.');
+            throw new BadRequestException('Aucun fichier téléchargé ou type invalide.');
         }
 
         const userId = req.user.id;
         const fullImagePath = join(process.cwd(), 'images', file.filename);
 
-        // Validation du fichier avant de le sauvegarder
         return isFileExtensionSafe(fullImagePath).pipe(
             switchMap((isFileLegit: boolean) => {
-                if (isFileLegit) {
-                    return this.userService.updateUserImageById(userId, fullImagePath).pipe(
-                        switchMap(() => {
-                            return of({
-                                message: 'Image téléchargée avec succès',
-                                fileName: file.filename,
-                                imageUrl: `/images/${file.filename}`,
-                            });
-                        }),
-                        catchError((err) => {
-                            removeFile(fullImagePath);
-                            // Log l'erreur avant de renvoyer une exception
-                            this.logger.error(`Erreur lors de la mise à jour de l'image: ${err.message}`);
-                            throw new BadRequestException('Erreur lors de la mise à jour de l\'image');
-                        })
-                    );
-                } else {
+                if (!isFileLegit) {
                     removeFile(fullImagePath);
-                    const errorMsg = `ERROR [ExceptionsHandler] Type de fichier non autorisé. Types valides: image/jpeg, image/jpg, image/png`;
-                    this.logger.error(errorMsg);  // Affiche l'erreur dans les logs
-                    throw new BadRequestException(errorMsg);  // Renvoie un message d'erreur
+                    throw new BadRequestException(' Type de fichier non autorisé.');
                 }
+                return this.userService.updateUserImageById(userId, fullImagePath).pipe(
+                    switchMap(() => of({
+                        message: ' Image téléchargée avec succès',
+                        fileName: file.filename,
+                        imageUrl: `/images/${file.filename}`,
+                    }))
+                );
             }),
             catchError((err) => {
                 removeFile(fullImagePath);
-                const errorMsg = `ERROR [ExceptionsHandler] Erreur lors de la validation du fichier: ${err.message}`;
-                // Log l'erreur générale
-                this.logger.error(errorMsg);
-                throw new BadRequestException(`Erreur lors de la validation du fichier: ${err.message}`);
+                this.logger.error(`Erreur lors de la mise à jour de l'image: ${err.message}`);
+                throw new BadRequestException('Erreur lors de la mise à jour de l\'image.');
             })
         );
     }
+
+    @UseGuards(JwtGuard)
+    @Get('image')
+async findImage(@Request() req, @Res() res): Promise<void> {
+    const userId = req.user.id;
+
+    try {
+        // Récupération du nom de l'image pour l'utilisateur
+        const imageName = await lastValueFrom(this.userService.findImageNameByUserId(userId));
+
+        if (!imageName) {
+            console.log(' Aucun nom d\'image trouvé pour cet utilisateur');
+            throw new NotFoundException('Aucune image trouvée pour cet utilisateur');
+        }
+
+        // Vérification du chemin complet de l'image (sans afficher le chemin dans le terminal)
+        const imagePath = imageName.startsWith('/') ? imageName : path.join(process.cwd(), 'images', imageName);
+
+        // Vérifier si le fichier existe sur le disque
+        try {
+            await fs.access(imagePath);
+        } catch (err) {
+            console.log(' L\'image n\'existe pas sur le disque:', err);
+            throw new NotFoundException('Image non trouvée');
+        }
+
+        // Envoyer l'image
+        return res.sendFile(imagePath);
+    } catch (error) {
+        console.error(' Erreur lors de la récupération de l\'image:', error);
+        throw new NotFoundException('Image non trouvée');
+    }
+}
+@UseGuards(JwtGuard)
+@Get('image-name')
+findUserImageName(@Request() req, @Res() res): Observable<{imageName: string}> {
+    const userId = req.user.id;
+    return this.userService.findImageNameByUserId(userId).pipe(
+        switchMap((imageName:string) => {
+            return of({ imageName });
+        })
+    )
+}
+
+
 }

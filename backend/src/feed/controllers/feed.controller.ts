@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Res, UseGuards } from '@nestjs/common';
 import { FeedService } from '../services/feed.service';
 import { FeedPost } from '../models/post.interface';
 import { from, Observable, skip, take } from 'rxjs';
@@ -43,6 +43,11 @@ export class FeedController {
     delete(@Param('id') id: number
     ): Observable<DeleteResult> {
         return this.feedService.deletePost(id);
+    }
+    @Get('image/:fileName')
+    findImageByName(@Param('fileName') fileName: string, @Res() res) {
+        if (!fileName || ['null' , '[null]'].includes(fileName)) return;
+        return res.sendFile(fileName , {root: './images'})
     }
 
 }
