@@ -58,5 +58,8 @@ export class ProfileSummaryComponent  implements OnInit {
     }
 
   }
+  onFileSelect(event: Event): void {
+    console.log('selected')
+  }
 
 }
