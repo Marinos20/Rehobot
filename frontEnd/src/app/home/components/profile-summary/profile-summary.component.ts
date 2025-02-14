@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { take } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http'; // Importer HttpClient
+import { Subscription } from 'rxjs';
 
 type ValidFileExtension = 'png' | 'jpg' | 'jpeg';
 type ValidMimeType = 'image/png' | 'image/jpg' | 'image/jpeg';
@@ -28,7 +29,7 @@ enum UserRole {
   standalone: true,
   imports: [CommonModule, IonicModule, ReactiveFormsModule],
 })
-export class ProfileSummaryComponent implements OnInit {
+export class ProfileSummaryComponent implements OnInit, OnDestroy {
   form: FormGroup = new FormGroup({
     file: new FormControl(null),
   });
@@ -36,7 +37,8 @@ export class ProfileSummaryComponent implements OnInit {
   validFileExtensions: ValidFileExtension[] = ['png', 'jpg', 'jpeg'];
   validMimeTypes: ValidMimeType[] = ['image/png', 'image/jpg', 'image/jpeg'];
 
-  
+  userFullImagePath: string = ''; // Initialisation avec une chaîne vide
+  private userSubcription: Subscription | null = null; // Initialisation avec null
 
   bannerColors: BannerColors = {
     colorOne: "#a0b4b7",
@@ -53,6 +55,10 @@ export class ProfileSummaryComponent implements OnInit {
   ngOnInit(): void {
     this.authService.userRole.pipe(take(1)).subscribe((role: string) => {
       this.bannerColors = this.getBannerColors(role as UserRole);
+    });
+
+    this.userSubcription = this.authService.userFullImagePath.subscribe((fullImagePath: string) => {
+      this.userFullImagePath = fullImagePath;
     });
   }
 
@@ -100,26 +106,6 @@ export class ProfileSummaryComponent implements OnInit {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const arrayBuffer = reader.result as ArrayBuffer;
-      this.detectFileType(arrayBuffer, file);
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  private detectFileType(buffer: ArrayBuffer, file: File): void {
-    const uint8Array = new Uint8Array(buffer);
-
-    if (uint8Array[0] === 0x89 && uint8Array[1] === 0x50 && uint8Array[2] === 0x4E && uint8Array[3] === 0x47) {
-      this.presentToast('Fichier PNG détecté', 'success');
-    } else if (uint8Array[0] === 0xFF && uint8Array[1] === 0xD8 && uint8Array[2] === 0xFF) {
-      this.presentToast('Fichier JPEG/JPG détecté', 'success');
-    } else {
-      this.presentToast('Type de fichier non pris en charge', 'danger');
-      return;
-    }
-
     // Envoi de l'image au backend
     this.uploadImage(file);
   }
@@ -130,18 +116,26 @@ export class ProfileSummaryComponent implements OnInit {
 
     // Appel à l'API pour télécharger l'image
     this.http.post('http://localhost:3000/omertaa/user/upload', formData)
-.subscribe({
-      next: (response: any) => {
-        this.presentToast('Image téléchargée avec succès', 'success');
-        console.log('Image enregistrée à :', response.avatarUrl); // Affiche l'URL de l'image téléchargée
-      },
-      error: (error) => {
-        this.presentToast('Erreur de téléchargement', 'danger');
-        console.error('Erreur de téléchargement:', error);
-      }
-    });
+      .subscribe({
+        next: (response: any) => {
+          this.presentToast('Image téléchargée avec succès', 'success');
+          console.log('Image enregistrée à :', response.avatarUrl); // Affiche l'URL de l'image téléchargée
+        },
+        error: (error) => {
+          if (error.status === 413) {
+            this.presentToast('Le fichier est trop volumineux. La taille maximale autorisée est de 5 Mo.', 'danger');
+          } else {
+            this.presentToast('Erreur de téléchargement', 'danger');
+          }
+          console.error('Erreur de téléchargement:', error);
+        }
+      });
     this.form.reset();
   }
 
-
+  ngOnDestroy() {
+    if (this.userSubcription) {
+      this.userSubcription.unsubscribe();
+    }
+  }
 }

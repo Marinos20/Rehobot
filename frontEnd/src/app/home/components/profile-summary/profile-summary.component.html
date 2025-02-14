@@ -12,7 +12,7 @@
 
 
     <ion-avatar (click)="fileUpload.click()" style="cursor: pointer;" class="ion-margin-auto">
-      <ion-img src="../../../../assets/marinos_1.jpg"></ion-img>
+      <ion-img *ngIf="userFullImagePath" [src]="userFullImagePath"></ion-img>
     </ion-avatar>
     <ion-card-title class="ion-margin-top">
      AGOUNKPE Marinos
