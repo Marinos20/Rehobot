@@ -148,6 +148,7 @@ export class AuthService {
       })
     );
   }
+  
 
   /**
    * Inscription d'un nouvel utilisateur
