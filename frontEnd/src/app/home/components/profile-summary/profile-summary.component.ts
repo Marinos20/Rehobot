@@ -1,11 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { take } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http'; // Importer HttpClient
-import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { environment } from 'src/environments/environment'; // Import du fichier environment
 
 type ValidFileExtension = 'png' | 'jpg' | 'jpeg';
 type ValidMimeType = 'image/png' | 'image/jpg' | 'image/jpeg';
@@ -40,6 +41,9 @@ export class ProfileSummaryComponent implements OnInit, OnDestroy {
   userFullImagePath: string = ''; // Initialisation avec une chaîne vide
   private userSubcription: Subscription | null = null; // Initialisation avec null
 
+  fullName$ = new BehaviorSubject<string | null>(null);
+  fullName = '';
+
   bannerColors: BannerColors = {
     colorOne: "#a0b4b7",
     colorTwo: "#dbe7e9",
@@ -49,12 +53,18 @@ export class ProfileSummaryComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private toastController: ToastController,
-    private http: HttpClient // Ajout de HttpClient
+    private http: HttpClient, // Ajout de HttpClient
+    private cdRef: ChangeDetectorRef  // Injection de ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.authService.userRole.pipe(take(1)).subscribe((role: string) => {
       this.bannerColors = this.getBannerColors(role as UserRole);
+    });
+
+    this.authService.userFullName.pipe(take(1)).subscribe((fullName: string) => {
+      this.fullName = fullName;
+      this.fullName$.next(fullName);
     });
 
     this.userSubcription = this.authService.userFullImagePath.subscribe((fullImagePath: string) => {
@@ -113,13 +123,21 @@ export class ProfileSummaryComponent implements OnInit, OnDestroy {
   private uploadImage(file: File): void {
     const formData = new FormData();
     formData.append('file', file);
-
-    // Appel à l'API pour télécharger l'image
-    this.http.post('http://localhost:3000/omertaa/user/upload', formData)
+  
+    const uploadUrl = `${environment.baseApiUrl}/user/upload`;
+  
+    this.http.post<{ avatarUrl: string }>(uploadUrl, formData)
       .subscribe({
-        next: (response: any) => {
+        next: (response: { avatarUrl: string }) => {
           this.presentToast('Image téléchargée avec succès', 'success');
-          console.log('Image enregistrée à :', response.avatarUrl); // Affiche l'URL de l'image téléchargée
+  
+          // Met à jour l'URL de l'image
+          this.userFullImagePath = response.avatarUrl;
+  
+          // Forcer la détection des changements
+          this.cdRef.detectChanges();
+  
+          console.log('Image enregistrée à :', response.avatarUrl);
         },
         error: (error) => {
           if (error.status === 413) {
@@ -130,8 +148,11 @@ export class ProfileSummaryComponent implements OnInit, OnDestroy {
           console.error('Erreur de téléchargement:', error);
         }
       });
+  
     this.form.reset();
   }
+  
+  
 
   ngOnDestroy() {
     if (this.userSubcription) {

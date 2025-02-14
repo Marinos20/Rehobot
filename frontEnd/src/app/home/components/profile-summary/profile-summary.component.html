@@ -9,20 +9,19 @@
 
     <input #fileUpload (change)="onFileSelect($event)" style="display: none;" type="file">
 
-
-
     <ion-avatar (click)="fileUpload.click()" style="cursor: pointer;" class="ion-margin-auto">
       <ion-img *ngIf="userFullImagePath" [src]="userFullImagePath"></ion-img>
+      <!-- <ng-template #defaultImage>
+        <ion-img src="assets/default-avatar.png" alt="Default Avatar"></ion-img>
+      </ng-template> -->
     </ion-avatar>
     <ion-card-title class="ion-margin-top">
-     AGOUNKPE Marinos
+     {{ fullName }}
     </ion-card-title>
     <ion-card-subtitle>Full Stack Developer</ion-card-subtitle>
   </ion-card-header>
 
-<div class="item-divider"></div>
-
-
+  <div class="item-divider"></div>
 
   <ion-card-content>
     <div>
