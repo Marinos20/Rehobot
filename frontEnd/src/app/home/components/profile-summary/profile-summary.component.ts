@@ -137,7 +137,9 @@ export class ProfileSummaryComponent implements OnInit, OnDestroy {
           // Forcer la détection des changements
           this.cdRef.detectChanges();
   
-          console.log('Image enregistrée à :', response.avatarUrl);
+          console.log('Nouvelle image de profil :', this.userFullImagePath);
+          
+
         },
         error: (error) => {
           if (error.status === 413) {
