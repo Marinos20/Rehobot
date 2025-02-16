@@ -6,6 +6,8 @@ import { UserService } from '../services/user.service';
 import { switchMap, catchError, of, Observable } from 'rxjs';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { User } from './models/user.interface';
+import { FriendRequest } from './models/friend-request.interface';
 
 @Controller('user')
 export class UserController {
@@ -74,4 +76,26 @@ export class UserController {
             })
         );
     }
+
+    @UseGuards(JwtGuard)
+    @Get(':userId')
+    findUserById(@Param('userId') userStringId: string): Observable<User> {
+        const userId = parseInt(userStringId)
+        return this.userService.findUserById(userId);
+    }
+
+    @UseGuards(JwtGuard)
+    @Post('friend-request/send/:receiverId')
+    sendFriendRequest(@Param('receiverId') receiverStringId: string, @Request() req): Observable<FriendRequest | { error: string }> {
+        const receiverId = parseInt(receiverStringId);
+        
+        if (isNaN(receiverId)) {
+            throw new BadRequestException('L\'ID du destinataire est invalide.');
+        }
+    
+        const creator = req.user; // Récupérer l'utilisateur authentifié
+        return this.userService.sendFriendRequest(receiverId, creator);
+    }
+    
+    
 }
