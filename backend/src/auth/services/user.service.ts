@@ -1,12 +1,11 @@
-
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { from, Observable, catchError, throwError, of,  } from 'rxjs';
-import { switchMap , map } from 'rxjs/operators'
+import { from, Observable, catchError, throwError, of } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 import { User } from '../controllers/models/user.interface';
 import { Repository, UpdateResult } from 'typeorm';
 import { UserEntity } from '../controllers/models/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FriendRequest } from '../controllers/models/friend-request.interface';
+import { FriendRequest, FriendRequestStatus, FriendRequest_Status } from '../controllers/models/friend-request.interface';
 import { FriendRequestEntity } from '../controllers/models/friend-request.entity';
 
 @Injectable()
@@ -48,34 +47,28 @@ export class UserService {
         );
     }
 
-    hasRequestBeenSendOrReceived(
-        creator:User,
-        receiver: User,
-    ): Observable<boolean> {
+    hasRequestBeenSendOrReceived(creator: User, receiver: User): Observable<boolean> {
         return from(this.friendRequestRepository.findOne({
             where: [
-                { creator, receiver},
+                { creator, receiver },
                 { creator: receiver, receiver: creator }
             ]
-        })
-    ).pipe(
-        switchMap((friendRequest: FriendRequest) => {
-            if (!friendRequest) return of(false);
-            return of(true);
-        })
-    )
+        })).pipe(
+            map((friendRequest: FriendRequest | null) => !!friendRequest)
+        );
     }
+
     sendFriendRequest(receiverId: number, creator: User): Observable<FriendRequest | { error: string }> {
-        if (receiverId === creator.id) return of({ error: 'It is not possible to add yourself!' });
+        if (receiverId === creator.id) return of({ error: 'Il est impossible de s’ajouter soi-même !' });
     
         return from(this.userRepository.findOne({ where: { id: receiverId } })).pipe(
             switchMap((receiver: User | null) => {
-                if (!receiver) return of({ error: 'Receiver not found!' });
+                if (!receiver) return of({ error: 'Destinataire non trouvé !' });
     
                 return this.hasRequestBeenSendOrReceived(creator, receiver).pipe(
                     switchMap((requestExists: boolean) => {
                         if (requestExists) {
-                            return of({ error: 'A friend request has already been sent or received!' });
+                            return of({ error: 'Une demande d’amitié a déjà été envoyée ou reçue !' });
                         }
     
                         const friendRequest: FriendRequest = {
@@ -88,8 +81,26 @@ export class UserService {
                     })
                 );
             }),
-            catchError(() => of({ error: 'An error occurred while sending the friend request' }))
+            catchError(() => of({ error: 'Une erreur est survenue lors de l’envoi de la demande d’amitié' }))
         );
     }
-    
+
+    getFriendRequestStatus(receiverId: number, currentUser: User): Observable<FriendRequestStatus> {
+        return this.findUserById(receiverId).pipe(
+            switchMap((receiver: User) => {
+                return from(this.friendRequestRepository.findOne({
+                    where: [
+                        { creator: currentUser, receiver },
+                        { creator: receiver, receiver: currentUser }
+                    ]
+                }));
+            }),
+            switchMap((friendRequest: FriendRequest | null) => {
+                if (!friendRequest) {
+                    return of({ status: 'pending' as FriendRequest_Status }); // Assurez-vous que le status est 'pending' comme FriendRequest_Status
+                }
+                return of({ status: friendRequest.status as FriendRequest_Status }); // S'assurer que le status est bien de type FriendRequest_Status
+            })
+        );
+    }
 }

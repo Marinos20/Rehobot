@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request, BadRequestException, Logger, Res, Get, Param } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request, BadRequestException, Logger, Res, Get, Param, NotFoundException, HttpCode } from '@nestjs/common';
 import { JwtGuard } from '../guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isFileExtensionSafe, saveImageToStorage, removeFile } from '../helpers/image-storage';
@@ -7,7 +7,7 @@ import { switchMap, catchError, of, Observable } from 'rxjs';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { User } from './models/user.interface';
-import { FriendRequest } from './models/friend-request.interface';
+import { FriendRequest, FriendRequestStatus } from './models/friend-request.interface';
 
 @Controller('user')
 export class UserController {
@@ -58,7 +58,7 @@ export class UserController {
             res.sendFile(imageName, { root: './images' });
         } else {
             this.logger.error(`Image introuvable: ${imageName}`);
-            throw new BadRequestException('Image non trouvée.');
+            throw new NotFoundException('Image non trouvée.');
         }
     }
 
@@ -80,12 +80,13 @@ export class UserController {
     @UseGuards(JwtGuard)
     @Get(':userId')
     findUserById(@Param('userId') userStringId: string): Observable<User> {
-        const userId = parseInt(userStringId)
+        const userId = parseInt(userStringId);
         return this.userService.findUserById(userId);
     }
 
     @UseGuards(JwtGuard)
     @Post('friend-request/send/:receiverId')
+    @HttpCode(201) // Envoi un code 201 pour une requête réussie
     sendFriendRequest(@Param('receiverId') receiverStringId: string, @Request() req): Observable<FriendRequest | { error: string }> {
         const receiverId = parseInt(receiverStringId);
         
@@ -96,6 +97,11 @@ export class UserController {
         const creator = req.user; // Récupérer l'utilisateur authentifié
         return this.userService.sendFriendRequest(receiverId, creator);
     }
-    
-    
+
+    @UseGuards(JwtGuard)
+    @Get('friend-request/status/:receiverId')
+    getFriendRequestStatus(@Param('receiverId') receiverStringId: string, @Request() req): Observable<FriendRequestStatus> {
+        const receiverId = parseInt(receiverStringId);
+        return this.userService.getFriendRequestStatus(receiverId, req.user);
+    }
 }
