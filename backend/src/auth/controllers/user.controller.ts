@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request, BadRequestException, Logger, Res, Get, Param, NotFoundException, HttpCode } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, Request, BadRequestException, Logger, Res, Get, Param, NotFoundException, HttpCode, Put, Body } from '@nestjs/common';
 import { JwtGuard } from '../guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isFileExtensionSafe, saveImageToStorage, removeFile } from '../helpers/image-storage';
@@ -103,5 +103,15 @@ export class UserController {
     getFriendRequestStatus(@Param('receiverId') receiverStringId: string, @Request() req): Observable<FriendRequestStatus> {
         const receiverId = parseInt(receiverStringId);
         return this.userService.getFriendRequestStatus(receiverId, req.user);
+    }
+
+
+    @UseGuards(JwtGuard)
+    @Put('friend-request/response/:friendRequestId')
+    respondToFriendRequest(
+        @Param('friendRequestId') friendRequestStringId: string, 
+        @Body() statusResponse: FriendRequestStatus): Observable<FriendRequestStatus> {
+        const friendRequestId = parseInt(friendRequestStringId);
+        return this.userService.respondToFriendRequest(statusResponse.status, friendRequestId );
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { from, Observable, catchError, throwError, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, retry } from 'rxjs/operators';
 import { User } from '../controllers/models/user.interface';
 import { Repository, UpdateResult } from 'typeorm';
 import { UserEntity } from '../controllers/models/user.entity';
@@ -102,5 +102,25 @@ export class UserService {
                 return of({ status: friendRequest.status as FriendRequest_Status }); // S'assurer que le status est bien de type FriendRequest_Status
             })
         );
+    }
+    getFriendToFriendRequestUserById(friendRequestId: number): Observable<FriendRequest>  {
+        return from(this.friendRequestRepository.findOne({
+            where: [{ id: friendRequestId}]
+        }))
+
+    }
+
+    respondToFriendRequest(
+        statusResponse: FriendRequest_Status,
+        friendRequestId: number
+    ): Observable<FriendRequestStatus> {
+        return this.getFriendToFriendRequestUserById(friendRequestId).pipe(
+            switchMap((friendRequest: FriendRequest) => {
+                return from(this.friendRequestRepository.save({
+                    ...friendRequest,
+                    status:statusResponse
+                }))
+            })
+        )
     }
 }
