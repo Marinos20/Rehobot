@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Observable, from } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Observable, from, throwError } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../controllers/models/user.entity';
 import { Repository } from 'typeorm';
-import { User } from '../controllers/models/user.interface';
 import { JwtService } from '@nestjs/jwt';
+import { UserEntity } from '../controllers/models/user.entity';
+import { User } from '../controllers/models/user.interface';
 
 @Injectable()
 export class AuthService {
-
-    constructor(@InjectRepository(UserEntity) 
+    constructor(
+        @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
-        private jwtService: JwtService) {}
-        
+        private jwtService: JwtService,
+    ) {}
+
     hashPassword(password: string): Observable<string> {
         return from(bcrypt.hash(password, 12));
     }
@@ -23,57 +24,81 @@ export class AuthService {
         const { firstName, lastName, email, password } = user;
 
         return this.hashPassword(password).pipe(
-            switchMap((hashPassword: string) => {
-                return from(
+            switchMap((hashedPassword: string) =>
+                from(
                     this.userRepository.save({
                         firstName,
                         lastName,
                         email,
-                        password: hashPassword,
-
+                        password: hashedPassword,
                     }),
                 ).pipe(
                     map((user: User) => {
                         delete user.password;
                         return user;
                     }),
-                );
+                    catchError(err => {
+                        return throwError(() => new HttpException('Erreur lors de l\'inscription', HttpStatus.INTERNAL_SERVER_ERROR));
+                    }),
+                ),
+            ),
+        );
+    }
 
+    validateUser(email: string, password: string): Observable<User> {
+        return from(
+            this.userRepository.findOne({
+                where: { email },
+                select: ['id', 'firstName', 'lastName', 'email', 'password', 'role'],
+            }),
+        ).pipe(
+            switchMap((user: User | null) => {
+                if (!user) {
+                    return throwError(() =>
+                        new HttpException(
+                            { status: HttpStatus.NOT_FOUND, error: 'Invalid Credentials' },
+                            HttpStatus.NOT_FOUND,
+                        ),
+                    );
+                }
+
+                return from(bcrypt.compare(password, user.password)).pipe(
+                    map((isValidPassword: boolean) => {
+                        if (!isValidPassword) {
+                            throw new HttpException(
+                                { status: HttpStatus.UNAUTHORIZED, error: 'Invalid Credentials' },
+                                HttpStatus.UNAUTHORIZED,
+                            );
+                        }
+                        delete user.password;
+                        return user;
+                    }),
+                );
+            }),
+            catchError(err => {
+                return throwError(() => err);
             }),
         );
     }
 
-    validateUser(email : string , password: string): Observable<User> {
-        return from(
-            this.userRepository.findOne(
-                { where: { email }, select: ['id', 'firstName', 'lastName', 'email', 'password', 'role'] }
-            ),
-    ).pipe(
-            switchMap((user: User) =>
-                from(bcrypt.compare(password, user.password)).pipe(
-                    map((isValidPassword: boolean) => {
-                        if (isValidPassword) {
-                            delete user.password;
-                            return user;
-                        }
-    
-                    }),
-                )
-    ) 
-        )
-
-    }
     login(user: User): Observable<string> {
-        const { email , password} = user;
+        const { email, password } = user;
+
         return this.validateUser(email, password).pipe(
-            switchMap((user : User)=> {
-                if (user ) {
-                    // create JWT - credentials
-                    return from(this.jwtService.signAsync({ user }));
+            switchMap((validatedUser: User) => {
+                if (!validatedUser) {
+                    return throwError(() =>
+                        new HttpException(
+                            { status: HttpStatus.UNAUTHORIZED, error: 'Invalid Credentials' },
+                            HttpStatus.UNAUTHORIZED,
+                        ),
+                    );
                 }
-            })
-        )
+                return from(this.jwtService.signAsync({ user: validatedUser }));
+            }),
+            catchError(err => {
+                return throwError(() => err);
+            }),
+        );
     }
-
-
 }
