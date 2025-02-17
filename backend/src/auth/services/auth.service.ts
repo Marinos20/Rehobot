@@ -7,7 +7,11 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from '../controllers/models/user.entity';
 import { User } from '../controllers/models/user.class';
-import { MailerService } from 'src/mailer/mailer.service';  // Import MailerService
+import { MailerService } from 'src/mailer/mailer.service';
+import * as speakeasy from 'speakeasy';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Injectable()
 export class AuthService {
@@ -15,7 +19,7 @@ export class AuthService {
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
         private jwtService: JwtService,
-        private readonly mailerService: MailerService,  // Injection du service de mail
+        private readonly mailerService: MailerService,
     ) {}
 
     hashPassword(password: string): Observable<string> {
@@ -37,10 +41,7 @@ export class AuthService {
                 ).pipe(
                     map((user: User) => {
                         delete user.password;
-
-                        // Après avoir créé l'utilisateur, envoyer un email de confirmation
                         this.sendConfirmationEmail(user.email);
-
                         return user;
                     }),
                     catchError(err => {
@@ -51,19 +52,14 @@ export class AuthService {
         );
     }
 
-    // Méthode pour envoyer un e-mail de confirmation avec un lien sécurisé
     private async sendConfirmationEmail(userEmail: string) {
-        // Créer un token JWT pour la confirmation de l'email
         const token = await this.jwtService.signAsync({ email: userEmail }, { expiresIn: '1h' });
 
-        // URL de confirmation
         const confirmationUrl = `http://localhost:3000/auth/confirm?token=${token}`;
 
-        // Envoi de l'email de confirmation
         await this.mailerService.sendSignupConfirmation(userEmail, confirmationUrl);
     }
 
-    //  Vérification si l'utilisateur existe déjà
     validateUser(email: string, password: string): Observable<User> {
         return from(
             this.userRepository.findOne({
@@ -100,7 +96,6 @@ export class AuthService {
         );
     }
 
-    // Méthode de connexion
     login(user: User): Observable<string> {
         const { email, password } = user;
 
@@ -120,5 +115,49 @@ export class AuthService {
                 return throwError(() => err);
             }),
         );
+    }
+
+    // 🔹 Génération et envoi du OTP pour réinitialisation de mot de passe
+    resetPasswordDemand(email: string) {
+        return from(
+            this.userRepository.findOne({ where: { email } })
+        ).pipe(
+            switchMap(user => {
+                if (!user) {
+                    return throwError(() =>
+                        new HttpException(
+                            { status: HttpStatus.NOT_FOUND, error: 'Email non trouvé' },
+                            HttpStatus.NOT_FOUND,
+                        ),
+                    );
+                }
+
+                // Générer un OTP sécurisé avec Speakeasy
+                const otp = speakeasy.totp({
+                    secret: process.env.SPEAKEASY_SECRET,
+                    digits:5,
+                    step:60 * 15,
+                    encoding: 'base32'
+                });
+
+                console.log(`🔑 OTP généré pour ${email} :`, otp);
+
+                // Envoi de l'email contenant l'OTP
+                return from(this.mailerService.sendPasswordResetOTP(user.email, otp));
+            }),
+            catchError(err => {
+                return throwError(() => new HttpException('Erreur lors de la demande de réinitialisation', HttpStatus.INTERNAL_SERVER_ERROR));
+            })
+        );
+    }
+
+    // 🔹 Vérification de l'OTP saisi par l'utilisateur
+    verifyOTP(email: string, otp: string): boolean {
+        return speakeasy.totp.verify({
+            secret: process.env.SPEAKEASY_SECRET,
+            encoding: 'base32',
+            token: otp,
+            window: 1 // Permet une légère tolérance dans le temps
+        });
     }
 }

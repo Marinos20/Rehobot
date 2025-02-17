@@ -1,21 +1,25 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
-import {map} from 'rxjs/operators'
+import { map } from 'rxjs/operators';
 import { User } from './models/user.class';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService : AuthService) {}
+    constructor(private authService: AuthService) {}
+
     @Post('register')
-    register(@Body() user: User) : Observable<User> {
+    register(@Body() user: User): Observable<User> {
         return this.authService.registerAccount(user);
     }
 
     @Post('login')
-    login(@Body() user: User) : Observable<{ token: string}> {
-        return this.authService
-        .login(user)
-        .pipe(map((jwt: string)=> ( { token: jwt})))
+    login(@Body() user: User): Observable<{ token: string }> {
+        return this.authService.login(user).pipe(map((jwt: string) => ({ token: jwt })));
+    }
+
+    @Post('reset-password')
+    resetPasswordDemand(@Body() { email }: { email: string }) {
+        return this.authService.resetPasswordDemand(email);
     }
 }
