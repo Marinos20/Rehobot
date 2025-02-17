@@ -56,7 +56,7 @@ export class AuthService {
                 if (!user) {
                     return throwError(() =>
                         new HttpException(
-                            { status: HttpStatus.NOT_FOUND, error: 'Invalid Credentials' },
+                            { status: HttpStatus.NOT_FOUND, error: 'Email non trouvé' },
                             HttpStatus.NOT_FOUND,
                         ),
                     );
@@ -66,7 +66,7 @@ export class AuthService {
                     map((isValidPassword: boolean) => {
                         if (!isValidPassword) {
                             throw new HttpException(
-                                { status: HttpStatus.UNAUTHORIZED, error: 'Invalid Credentials' },
+                                { status: HttpStatus.UNAUTHORIZED, error: 'Mot de passe incorrect' },
                                 HttpStatus.UNAUTHORIZED,
                             );
                         }

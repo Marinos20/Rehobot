@@ -20,9 +20,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
             // Vérifie si responseBody est une chaîne de caractères
             if (typeof responseBody === 'string') {
                 message = responseBody;
-            } else if (typeof responseBody === 'object' && responseBody !== null && 'message' in responseBody) {
-                // Si responseBody est un objet et qu'il contient un message, on l'assigne
-                message = (responseBody as { message: string }).message || 'Une erreur interne est survenue';
+            } else if (typeof responseBody === 'object' && responseBody !== null && 'error' in responseBody) {
+                // Vérifie si l'erreur concerne l'email ou le mot de passe
+                if (responseBody.error === 'Email non trouvé') {
+                    message = 'L\'email saisi est incorrect';
+                } else if (responseBody.error === 'Mot de passe incorrect') {
+                    message = 'Le mot de passe saisi est incorrect';
+                } else {
+                    message = responseBody['message'] || 'Une erreur interne est survenue';
+                }
             }
         }
 
