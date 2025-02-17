@@ -140,7 +140,7 @@ export class AuthService {
                     encoding: 'base32'
                 });
 
-                console.log(`🔑 OTP généré pour ${email} :`, otp);
+                console.log(` OTP généré pour ${email} :`, otp);
 
                 // Envoi de l'email contenant l'OTP
                 return from(this.mailerService.sendPasswordResetOTP(user.email, otp));
@@ -159,5 +159,48 @@ export class AuthService {
             token: otp,
             window: 1 // Permet une légère tolérance dans le temps
         });
+    }
+
+    // 🔹 Réinitialisation du mot de passe avec confirmation de l'OTP
+    resetPasswordConfirmation(email: string, otp: string, newPassword: string): Observable<any> {
+        return from(this.userRepository.findOne({ where: { email } })).pipe(
+            switchMap(user => {
+                if (!user) {
+                    return throwError(() =>
+                        new HttpException(
+                            { status: HttpStatus.NOT_FOUND, error: 'Email non trouvé' },
+                            HttpStatus.NOT_FOUND,
+                        ),
+                    );
+                }
+
+                // Vérification de l'OTP
+                const isOtpValid = this.verifyOTP(email, otp);
+                if (!isOtpValid) {
+                    return throwError(() =>
+                        new HttpException(
+                            { status: HttpStatus.BAD_REQUEST, error: 'OTP invalide' },
+                            HttpStatus.BAD_REQUEST,
+                        ),
+                    );
+                }
+
+                // Hachage du nouveau mot de passe
+                return this.hashPassword(newPassword).pipe(
+                    switchMap(hashedPassword => {
+                        user.password = hashedPassword;
+                        return from(this.userRepository.save(user)).pipe(
+                            map(() => ({
+                                status: 'success',
+                                message: 'Mot de passe réinitialisé avec succès',
+                            })),
+                        );
+                    }),
+                );
+            }),
+            catchError(err => {
+                return throwError(() => new HttpException('Erreur lors de la réinitialisation du mot de passe', HttpStatus.INTERNAL_SERVER_ERROR));
+            }),
+        );
     }
 }

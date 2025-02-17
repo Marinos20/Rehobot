@@ -22,4 +22,10 @@ export class AuthController {
     resetPasswordDemand(@Body() { email }: { email: string }) {
         return this.authService.resetPasswordDemand(email);
     }
+
+    @Post('reset-password-confirmation')
+resetPasswordConfirmation(@Body() body: { email: string; otp: string; newPassword: string }) {
+    return this.authService.resetPasswordConfirmation(body.email, body.otp, body.newPassword);
+}
+
 }
