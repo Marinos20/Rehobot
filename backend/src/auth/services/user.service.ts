@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { from, Observable, catchError, throwError, of } from 'rxjs';
 import { switchMap, map, retry } from 'rxjs/operators';
-import { User } from '../controllers/models/user.interface';
+import { User } from '../controllers/models/user.class';
 import { Repository, UpdateResult } from 'typeorm';
 import { UserEntity } from '../controllers/models/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,14 +21,22 @@ export class UserService {
         return from(
             this.userRepository.findOne({ where: { id }, relations: ['feedPosts'] })
         ).pipe(
-            map((user: User | null) => {
-                if (!user) throw new NotFoundException('Utilisateur non trouvé');
+            switchMap((user: User | null) => {
+                if (!user) {
+                    return throwError(() =>
+                        new HttpException(
+                            { status: HttpStatus.NOT_FOUND, error: 'Utilisateur non trouvé' },
+                            HttpStatus.NOT_FOUND,
+                        ),
+                    );
+                }
                 delete user.password;
-                return user;
+                return of(user); // Retourne l'utilisateur dans un Observable
             }),
             catchError(() => throwError(() => new NotFoundException('Utilisateur non trouvé')))
         );
     }
+    
 
     updateUserImageById(id: number, imagePath: string): Observable<UpdateResult> {
         return from(this.userRepository.update(id, { imagePath })).pipe(

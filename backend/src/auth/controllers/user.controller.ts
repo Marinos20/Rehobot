@@ -6,7 +6,7 @@ import { UserService } from '../services/user.service';
 import { switchMap, catchError, of, Observable } from 'rxjs';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { User } from './models/user.interface';
+import { User } from './models/user.class';
 import { FriendRequest, FriendRequestStatus } from './models/friend-request.interface';
 
 @Controller('user')
