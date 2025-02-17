@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from '../controllers/models/user.entity';
 import { User } from '../controllers/models/user.class';
+import { MailerService } from 'src/mailer/mailer.service';  // Import MailerService
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
         private jwtService: JwtService,
+        private readonly mailerService: MailerService,  // Injection du service de mail
     ) {}
 
     hashPassword(password: string): Observable<string> {
@@ -35,6 +37,10 @@ export class AuthService {
                 ).pipe(
                     map((user: User) => {
                         delete user.password;
+
+                        // Après avoir créé l'utilisateur, envoyer un email de confirmation
+                        this.sendConfirmationEmail(user.email);
+
                         return user;
                     }),
                     catchError(err => {
@@ -45,6 +51,19 @@ export class AuthService {
         );
     }
 
+    // Méthode pour envoyer un e-mail de confirmation avec un lien sécurisé
+    private async sendConfirmationEmail(userEmail: string) {
+        // Créer un token JWT pour la confirmation de l'email
+        const token = await this.jwtService.signAsync({ email: userEmail }, { expiresIn: '1h' });
+
+        // URL de confirmation
+        const confirmationUrl = `http://localhost:3000/auth/confirm?token=${token}`;
+
+        // Envoi de l'email de confirmation
+        await this.mailerService.sendSignupConfirmation(userEmail, confirmationUrl);
+    }
+
+    //  Vérification si l'utilisateur existe déjà
     validateUser(email: string, password: string): Observable<User> {
         return from(
             this.userRepository.findOne({
@@ -81,6 +100,7 @@ export class AuthService {
         );
     }
 
+    // Méthode de connexion
     login(user: User): Observable<string> {
         const { email, password } = user;
 
