@@ -4,7 +4,7 @@ import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedPost } from '../models/post.interface';
 import { from, Observable, skip, take } from 'rxjs';
-import { User } from 'src/auth/controllers/models/user.interface';
+import { User } from 'src/auth/controllers/models/user.class';
 import { relative } from 'path';
 
 @Injectable()
