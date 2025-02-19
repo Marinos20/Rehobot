@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -24,8 +24,12 @@ export class AuthController {
     }
 
     @Post('reset-password-confirmation')
-resetPasswordConfirmation(@Body() body: { email: string; otp: string; newPassword: string }) {
-    return this.authService.resetPasswordConfirmation(body.email, body.otp, body.newPassword);
-}
-
+    resetPasswordConfirmation(@Body() body: { email: string; otp: string; newPassword: string }) {
+        // Validation des données
+        if (!body.email || !body.otp || !body.newPassword) {
+            throw new HttpException('Données invalides', HttpStatus.BAD_REQUEST);
+        }
+        
+        return this.authService.resetPasswordConfirmation(body.email, body.otp, body.newPassword);
+    }
 }

@@ -135,12 +135,12 @@ export class AuthService {
                 // Générer un OTP sécurisé avec Speakeasy
                 const otp = speakeasy.totp({
                     secret: process.env.SPEAKEASY_SECRET,
-                    digits:5,
-                    step:60 * 15,
-                    encoding: 'base32'
+                    digits: 5,
+                    step: 60 * 15,
+                    encoding: 'base32',
                 });
 
-                console.log(` OTP généré pour ${email} :`, otp);
+                console.log(`OTP généré pour ${email} :`, otp);
 
                 // Envoi de l'email contenant l'OTP
                 return from(this.mailerService.sendPasswordResetOTP(user.email, otp));
@@ -157,7 +157,7 @@ export class AuthService {
             secret: process.env.SPEAKEASY_SECRET,
             encoding: 'base32',
             token: otp,
-            window: 1 // Permet une légère tolérance dans le temps
+            window: 1, // Permet une légère tolérance dans le temps
         });
     }
 
